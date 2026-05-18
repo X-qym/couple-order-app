@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情侣点餐</title>
+    
+    <!-- PWA配置 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196F3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="情侣点餐">
+    
+    <!-- 引入外部CSS样式 -->
+    <link rel="stylesheet" href="style.css">
+    <!-- 在index.html的<head>中添加这一行 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <div class="app-bar" id="appBar">情侣点餐</div>
+    
+    <!-- 欢迎/身份选择页面 -->
+    <div id="welcomeScreen" class="screen welcome-screen active">
+        <h1>欢迎使用情侣点餐</h1>
+        <button class="role-btn boy-btn" onclick="signIn('boy')">我是男朋友</button>
+        <button class="role-btn girl-btn" onclick="signIn('girl')">我是女朋友</button>
+    </div>
+    
+    <!-- 点餐页面 -->
+    <div id="orderScreen" class="screen">
+        <div class="dishes-grid" id="dishesGrid"></div>
+        
+        <!-- 购物车悬浮按钮 -->
+        <button class="cart-btn" onclick="toggleCart()">
+            🛒
+            <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+        
+        <!-- 购物车弹窗 -->
+        <div class="cart-modal" id="cartModal">
+            <div class="cart-content">
+                <h2 style="margin-bottom: 20px;">购物车</h2>
+                <div id="cartItems"></div>
+                <div class="cart-total">
+                    <span>总计:</span>
+                    <span id="cartTotal">¥0.00</span>
+                </div>
+                <input type="text" class="remark-input" id="remarkInput" placeholder="备注（如：多放辣、不要香菜）">
+                <button class="submit-btn" onclick="submitOrder()">提交订单</button>
+                <button class="close-cart-btn" onclick="toggleCart()">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 聊天页面 -->
+    <div id="chatScreen" class="screen">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="输入消息..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+    
+    <!-- 底部导航栏 -->
+    <div class="bottom-nav" id="bottomNav" style="display: none;">
+        <div class="nav-item active" onclick="switchTab('order')">
+            <div class="nav-icon">🍽️</div>
+            <div class="nav-text">点餐</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('chat')">
+            <div class="nav-icon">💬</div>
+            <div class="nav-text">聊天</div>
+        </div>
+    </div>
+
+    <!-- 引入Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-messaging-compat.js"></script>
+    
+    <!-- 引入外部JavaScript逻辑 -->
+    <script src="app.js"></script>
+</body>
+</html>
