@@ -1,16 +1,14 @@
 // ==============================================
-// 👇 请替换以下所有配置信息 👇
+// 👇 配置信息（已经是你的，不用改）
 // ==============================================
 const SUPABASE_URL = "https://htncscadulptxewedblf.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_62M-HWaCglRofXcXtrATHQ_rXUQDo9f";
 const BOY_UID = "1d43722b-15c0-48c0-aefb-49fbf2362921";
 const GIRL_UID = "1d43722b-15c0-48c0-aefb-49fbf2362921";
 // ==============================================
-// 👆 以上配置信息必须替换 👆
-// ==============================================
 
-// 初始化Supabase
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ✅ 修复：变量名改成sb，避免和全局supabase重名
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // 全局变量
 let currentUser = null;
@@ -24,7 +22,7 @@ let messagesSubscription = null;
 // 应用入口函数
 async function initApp() {
     // 检查用户登录状态
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await sb.auth.getUser();
     if (user) {
         currentUser = user;
         currentRole = user.email === 'boy@couple.com' ? 'boy' : 'girl';
@@ -35,7 +33,7 @@ async function initApp() {
     }
     
     // 监听登录状态变化
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    sb.auth.onAuthStateChange(async (event, session) => {
         if (session) {
             currentUser = session.user;
             currentRole = session.user.email === 'boy@couple.com' ? 'boy' : 'girl';
@@ -50,22 +48,22 @@ async function initApp() {
         }
     });
     
-    // 注册Service Worker
-    if ('serviceWorker' in navigator) {
-        try {
-            await navigator.serviceWorker.register('/sw.js');
-            console.log('Service Worker注册成功');
-        } catch (e) {
-            console.log('Service Worker注册失败:', e);
-        }
-    }
+    // 注册Service Worker（没有就注释掉，避免报错）
+    // if ('serviceWorker' in navigator) {
+    //     try {
+    //         await navigator.serviceWorker.register('/sw.js');
+    //         console.log('Service Worker注册成功');
+    //     } catch (e) {
+    //         console.log('Service Worker注册失败:', e);
+    //     }
+    // }
 }
 
-// 用户登录函数
+// 用户登录函数（和HTML里的onclick一致）
 async function login(role) {
     try {
         const email = role === 'boy' ? 'boy@couple.com' : 'girl@couple.com';
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await sb.auth.signInWithPassword({
             email: email,
             password: '123456'
         });
@@ -73,7 +71,7 @@ async function login(role) {
         if (error) throw error;
         
         // 保存用户角色到数据库
-        await supabase
+        await sb
             .from('users')
             .upsert({
                 id: data.user.id,
@@ -122,7 +120,7 @@ function switchTab(tab) {
 
 // 加载菜品数据
 async function loadDishes() {
-    const { data, error } = await supabase
+    const { data, error } = await sb
         .from('dishes')
         .select('*')
         .order('created_at', { ascending: true });
@@ -242,7 +240,7 @@ async function submitOrder() {
         }
         
         // 将订单保存到数据库
-        const { error } = await supabase
+        const { error } = await sb
             .from('orders')
             .insert({
                 user_id: currentUser.id,
@@ -272,7 +270,7 @@ function loadMessages() {
     chatMessages.innerHTML = '';
     
     // 获取历史消息
-    supabase
+    sb
         .from('messages')
         .select('*')
         .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
@@ -325,7 +323,7 @@ async function sendMessage() {
         const receiverId = currentRole === 'boy' ? GIRL_UID : BOY_UID;
         
         // 将消息保存到数据库
-        const { error } = await supabase
+        const { error } = await sb
             .from('messages')
             .insert({
                 sender_id: currentUser.id,
@@ -345,7 +343,7 @@ async function sendMessage() {
 function setupRealTimeListeners() {
     // 监听新订单（只有男朋友能收到）
     if (currentRole === 'boy') {
-        ordersSubscription = supabase
+        ordersSubscription = sb
             .channel('orders-channel')
             .on('postgres_changes', 
                 { event: 'INSERT', schema: 'public', table: 'orders', filter: `user_id=eq.${GIRL_UID}` },
@@ -358,7 +356,7 @@ function setupRealTimeListeners() {
     }
     
     // 监听新消息
-    messagesSubscription = supabase
+    messagesSubscription = sb
         .channel('messages-channel')
         .on('postgres_changes', 
             { event: 'INSERT', schema: 'public', table: 'messages', filter: `receiver_id=eq.${currentUser.id}` },
@@ -368,7 +366,7 @@ function setupRealTimeListeners() {
                 showLocalNotification(`新消息来自${senderName}`, msg.content);
                 
                 // 标记消息为已读
-                await supabase
+                await sb
                     .from('messages')
                     .update({ is_read: true })
                     .eq('id', msg.id);
@@ -389,13 +387,9 @@ async function initNotifications() {
         // 请求用户通知权限
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
-            alert('请允许通知权限，否则无法收到点餐提醒');
+            console.log('未开启通知权限，不影响核心功能');
             return;
         }
-        
-        // 生成Web Push订阅（这里使用简单的本地通知，足够个人使用）
-        // 对于更复杂的后台通知，可以使用OneSignal等服务
-        
     } catch (error) {
         console.log('通知初始化失败:', error);
     }
