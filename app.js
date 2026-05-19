@@ -62,7 +62,7 @@ async function initApp() {
 }
 
 // 用户登录函数
-async function signIn(role) {
+async function login(role) {
     try {
         const email = role === 'boy' ? 'boy@couple.com' : 'girl@couple.com';
         const { data, error } = await supabase.auth.signInWithPassword({
