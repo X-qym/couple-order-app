@@ -407,9 +407,9 @@ function showLocalNotification(title, body) {
 
 // 启动应用
 initApp();
-// 直接显示点餐页，绕开登录
+// 直接显示点餐页面，彻底跳过登录
 function showMainApp() {
-  document.getElementById('welcomeScreen').classList.remove('active');
-  document.getElementById('orderScreen').classList.add('active');
-  document.getElementById('bottomNav').style.display = 'flex';
+  document.getElementById("welcomeScreen").style.display = "none";
+  document.getElementById("orderScreen").style.display = "block";
+  document.getElementById("bottomNav").style.display = "flex";
 }
