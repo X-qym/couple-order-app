@@ -407,3 +407,9 @@ function showLocalNotification(title, body) {
 
 // 启动应用
 initApp();
+// 直接显示点餐页，绕开登录
+function showMainApp() {
+  document.getElementById('welcomeScreen').classList.remove('active');
+  document.getElementById('orderScreen').classList.add('active');
+  document.getElementById('bottomNav').style.display = 'flex';
+}
